@@ -1,0 +1,22 @@
+# Dependency directories
+node_modules/
+npm-debug.log
+
+# Compiled output
+dist/
+
+# Environment variables
+.env
+
+# IDE files
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Editor backup files
+*~

@@ -1,6 +1,6 @@
 {
   "name": "@zainundin/mongoose-factory",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "A utility for generating and creating instances of Mongoose models with ease.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

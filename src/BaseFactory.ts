@@ -1,12 +1,14 @@
-// Define a custom error type for more descriptive error messages
+import { Model } from 'mongoose';
+
+/**
+ * Custom error type for more descriptive error messages.
+ */
 export class FactoryError extends Error {
     constructor(message: string) {
         super(message);
         this.name = 'FactoryError';
     }
 }
-
-import { Model } from 'mongoose';
 
 /**
  * BaseFactory class for generating and creating instances of Mongoose models.
@@ -16,15 +18,7 @@ abstract class BaseFactory<T> {
     protected quantity: number = 1;
     protected data: T[] = [];
     protected model: Model<T>;
-    private mutation: (() => Partial<T>)[] = [];
-
-    /**
-     * Defines the base structure of the data to be generated.
-     * Subclasses must implement this method to provide the definition.
-     * @abstract
-     * @returns {Promise<T>} The base data structure.
-     */
-    abstract definition(): Promise<T>;
+    private mutation: (() => Promise<Partial<T>>)[] = [];
 
     /**
      * Constructs a new BaseFactory instance.
@@ -33,6 +27,14 @@ abstract class BaseFactory<T> {
     constructor(model: Model<T>) {
         this.model = model;
     }
+
+    /**
+     * Defines the base structure of the data to be generated.
+     * Subclasses must implement this method to provide the definition.
+     * @abstract
+     * @returns {Promise<T>} The base data structure.
+     */
+    abstract definition(): Promise<T>;
 
     /**
      * Sets the quantity of instances to generate.
@@ -50,14 +52,14 @@ abstract class BaseFactory<T> {
 
     /**
      * Adds state mutations to modify the generated data.
-     * @param {Partial<T> | (() => Partial<T>)} state - The state mutation to apply.
+     * @param {Partial<T> | (() => Promise<Partial<T>>)} state - The state mutation to apply.
      * @returns {this} The current BaseFactory instance for method chaining.
      */
-    withState(state: Partial<T> | (() => Partial<T>)): this {
+    withState(state: Partial<T> | (() => Promise<Partial<T>>)): this {
         if (state instanceof Function) {
             this.mutation.push(state);
         } else {
-            this.mutation.push(() => state);
+            this.mutation.push(async () => state);
         }
         return this;
     }
@@ -69,7 +71,7 @@ abstract class BaseFactory<T> {
         for (let i = 0; i < this.quantity; i++) {
             let newData: T = await this.definition();
             for (const mutation of this.mutation) {
-                newData = { ...newData, ...mutation() };
+                newData = { ...newData, ...(await mutation()) };
             }
             this.data.push(newData);
         }
@@ -110,6 +112,7 @@ abstract class BaseFactory<T> {
                 result = await this.model.insertMany(this.data);
             }
         } catch (error) {
+            // Implement error handling and recovery mechanism
             console.error('Error occurred during creation:', error);
             throw new FactoryError('Error occurred during creation. Check the console for details.');
         }

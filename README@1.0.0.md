@@ -1,10 +1,10 @@
 # @zainundin/mongoose-factory
 
-`@zainundin/mongoose-factory` is a utility for generating and creating instances of Mongoose models with ease.
+@zainundin/mongoose-factory is a utility for generating and creating instances of Mongoose models with ease.
 
 ## Installation
 
-You can install `@zainundin/mongoose-factory` via npm:
+You can install @zainundin/mongoose-factory via npm:
 
 ```bash
 npm install @zainundin/mongoose-factory
@@ -12,11 +12,11 @@ npm install @zainundin/mongoose-factory
 
 ## Usage
 
-To use `@zainundin/mongoose-factory`, you need to create a subclass of the `BaseFactory` class and implement the `definition()` method to define the structure of the data you want to generate.
+To use @zainundin/mongoose-factory, you need to create a subclass of the `BaseFactory` class and implement the `definition()` method to define the structure of the data you want to generate.
 
 ### Example Usage with Faker
 
-Here's an example of how to use `@zainundin/mongoose-factory` with Faker for generating fake data and applying state mutations with the `withState()` method:
+Here's an example of how to use @zainundin/mongoose-factory with Faker for generating fake data and applying state mutations with the `withState()` method:
 
 ```javascript
 import { Model } from 'mongoose';
@@ -33,22 +33,22 @@ class YourModelFactory extends BaseFactory {
     }
 
     // Implement the abstract definition method
-    async definition() {
+    definition() {
         // Define the structure of your data here
         return {
             name: faker.person.fullname(),
             email: faker.internet.email(),
             age: faker.number.int({max: 120, min: 10}),
-            status: faker.helpers.enumValue(['active', 'inactive']),
+            status: faker.helpers.enumValue({'active', 'inactive'}),
             isAdmin: faker.datatype.boolean(),
             createdAt: faker.date.recent()
         };
     }
 
     // Add a new method to apply state mutations
-    async isAdmin() {
-        await this.withState({isAdmin: true});
-        return this;
+    isAdmin() {
+        this.withState({isAdmin: true})
+        return this
     }
 }
 
@@ -63,7 +63,7 @@ You can generate a single instance of your model without any mutations:
 
 ```javascript
 // Generate a single instance of your model
-const instance = await yourModelFactory.make();
+const instance = yourModelFactory.make();
 console.log(instance); // Output: The generated instance of your model
 ```
 
@@ -73,7 +73,7 @@ You can generate multiple instances of your model with the specified count:
 
 ```javascript
 // Generate multiple instances of your model with count
-const instances = await yourModelFactory.count(5).make();
+const instances = yourModelFactory.count(5).make();
 console.log(instances); // Output: An array of 5 generated instances of your model
 ```
 
@@ -83,7 +83,7 @@ You can generate a single instance of your model with specific state mutations u
 
 ```javascript
 // Generate a single instance of your model with state mutations (partial object)
-const instanceWithStatePartial = await yourModelFactory
+const instanceWithStatePartial = yourModelFactory
     .withState({ status: 'active', isAdmin: true })
     .make();
 console.log(instanceWithStatePartial); // Output: The generated instance of your model with applied state mutations
@@ -95,7 +95,7 @@ You can generate a single instance of your model with specific state applied thr
 
 ```javascript
 // Generate a single instance of your model with specific state using a custom method
-const instanceWithAdminState = await yourModelFactory
+const instanceWithAdminState = yourModelFactory
     .isAdmin()
     .make();
 console.log(instanceWithAdminState); // Output: The generated instance of your model with isAdmin set to true
@@ -107,7 +107,7 @@ You can also generate a single instance of your model with state mutations using
 
 ```javascript
 // Generate a single instance of your model with state mutations (function returning recent Faker date)
-const instanceWithStateFunction = await yourModelFactory
+const instanceWithStateFunction = yourModelFactory
     .withState(() => ({ createdAt: faker.date.recent() }))
     .make();
 console.log(instanceWithStateFunction); // Output: The generated instance of your model with applied state mutations
@@ -127,8 +127,8 @@ You may need to adjust the import statements, variable names, and method impleme
 #### Methods
 
 - `count(quantity: number): this`: Sets the quantity of instances to generate.
-- `withState(state: Partial<T> | (() => Promise<Partial<T>>)): this`: Adds state mutations to modify the generated data.
-- `make(): Promise<T | T[]>`: Generates instances without persisting them.
+- `withState(state: Partial<T> | (() => Partial<T>)): this`: Adds state mutations to modify the generated data.
+- `make(): T | T[]`: Generates instances without persisting them.
 - `create(): Promise<T | T[]>`: Generates and persists instances to the database.
 
 ### Contributing

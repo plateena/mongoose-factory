@@ -1,12 +1,12 @@
-import { Model } from 'mongoose';
-
 // Define a custom error type for more descriptive error messages
-class FactoryError extends Error {
+export class FactoryError extends Error {
     constructor(message: string) {
         super(message);
         this.name = 'FactoryError';
     }
 }
+
+import { Model } from 'mongoose';
 
 /**
  * BaseFactory class for generating and creating instances of Mongoose models.
@@ -22,9 +22,9 @@ abstract class BaseFactory<T> {
      * Defines the base structure of the data to be generated.
      * Subclasses must implement this method to provide the definition.
      * @abstract
-     * @returns {T} The base data structure.
+     * @returns {Promise<T>} The base data structure.
      */
-    abstract definition(): T;
+    abstract definition(): Promise<T>;
 
     /**
      * Constructs a new BaseFactory instance.
@@ -65,9 +65,9 @@ abstract class BaseFactory<T> {
     /**
      * Generates instances based on the defined quantity and mutations.
      */
-    generate(): void {
+    async generate(): Promise<void> {
         for (let i = 0; i < this.quantity; i++) {
-            let newData: T = this.definition();
+            let newData: T = await this.definition();
             for (const mutation of this.mutation) {
                 newData = { ...newData, ...mutation() };
             }
@@ -86,10 +86,10 @@ abstract class BaseFactory<T> {
 
     /**
      * Generates and returns the instances without persisting them.
-     * @returns {T | T[]} The generated instance or an array of instances.
+     * @returns {Promise<T | T[]>} The generated instance or an array of instances.
      */
-    make(): T | T[] {
-        this.generate();
+    async make(): Promise<T | T[]> {
+        await this.generate();
         const result: T | T[] = this.quantity === 1 ? this.data[0] : this.data;
         this.reset();
         return result;
@@ -101,7 +101,7 @@ abstract class BaseFactory<T> {
      * @throws {FactoryError} If an error occurs during instance creation.
      */
     async create(): Promise<T | T[]> {
-        this.generate();
+        await this.generate();
         let result: T | T[];
         try {
             if (this.quantity === 1) {
@@ -110,7 +110,6 @@ abstract class BaseFactory<T> {
                 result = await this.model.insertMany(this.data);
             }
         } catch (error) {
-            // Implement error handling and recovery mechanism
             console.error('Error occurred during creation:', error);
             throw new FactoryError('Error occurred during creation. Check the console for details.');
         }
